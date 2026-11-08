@@ -681,6 +681,24 @@ describe(`Shell`, () => {
         });
       });
 
+      it(`should end variable names at characters that can't be part of them`, async () => {
+        await expectResult(bufferResult(
+          `echo $FOO-$BAR $FOO$BAR $FOO@x $$-`,
+          [],
+          {env: {FOO: `1`, BAR: `2`}},
+        ), {
+          stdout: `1-2 12 1@x ${process.pid}-\n`,
+        });
+
+        await expectResult(bufferResult(
+          `echo $0abc \${FOO}-x`,
+          [`arg`],
+          {env: {FOO: `1`}},
+        ), {
+          stdout: `argabc 1-x\n`,
+        });
+      });
+
       it(`should support default arguments via \${ARG:-...}`, async () => {
         await expectResult(bufferResult(
           `echo "\${DOESNT_EXIST:-hello world}"`,
@@ -1924,6 +1942,17 @@ describe(`Shell`, () => {
       ), {
         exitCode: 0,
         stdout: `3\n`,
+      });
+    });
+
+    it(`should support variable names next to operators`, async () => {
+      await expectResult(bufferResult(
+        `echo $((FOO-1)) $(($FOO*2))`,
+        [],
+        {env: {FOO: `5`}},
+      ), {
+        exitCode: 0,
+        stdout: `4 10\n`,
       });
     });
 

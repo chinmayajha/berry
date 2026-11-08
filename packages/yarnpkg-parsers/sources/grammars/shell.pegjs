@@ -141,7 +141,7 @@ ArithmeticPrimary
   = sign:('-' / '+')? left:[0-9]+ '.' right:[0-9]+ { return { type: `number`, value: (sign === '-' ? -1 : 1) * parseFloat(left.join(``) + `.` + right.join(``)) } }
   / sign:('-' / '+')? value:[0-9]+ { return { type: `number`, value: (sign === '-' ? -1 : 1) *  parseInt(value.join(``)) } }
   / variable:Variable { return { type: `variable`, ...variable } }
-  / name:Identifier { return { type: `variable`, name } }
+  / name:Name { return { type: `variable`, name } }
   / '(' S* value:ArithmeticExpression S* ')' { return value }
 
 ArithmeticTimesExpression
@@ -178,7 +178,12 @@ EnvVariable
   = [a-zA-Z0-9_]+ { return text() }
 
 Identifier
-  = [$@*?#a-zA-Z0-9_-]+ { return text() }
+  = Name
+  / [0-9]+ { return text() }
+  / [$@*?#-] { return text() }
+
+Name
+  = [a-zA-Z_] [a-zA-Z0-9_]* { return text() }
 
 SpecialShellChars
   = [()}<>$|&; \t"']
